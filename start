@@ -1,54 +1,56 @@
 #!/bin/bash
 
-PASSWORD=""
-FILENAME=""
-CONFIG=""
+# 초기 변수 설정
+PASSWORD=""    # PASSWORD 변수 초기화, 사용자로부터 받을 암호 저장을 위한 변수
+FILENAME=""    # FILENAME 변수 초기화, 사용자로부터 받을 파일명 저장을 위한 변수
+CONFIG=""      # CONFIG 변수 초기화, 사용자로부터 받을 설정 파일명 저장을 위한 변수
 
-# Argument parsing
+# 인자 파싱
+# getopts를 사용하여 명령줄 옵션 처리. ":"은 필수 인자를 의미
 while getopts ":p:f:c:" opt; do
   case $opt in
-    p)
+    p)  # -p 옵션, PASSWORD 변수에 입력 값을 저장
       PASSWORD="$OPTARG"
       ;;
-    f)
+    f)  # -f 옵션, FILENAME 변수에 입력 값을 저장
       FILENAME="$OPTARG"
       ;;
-    c)
+    c)  # -c 옵션, CONFIG 변수에 입력 값을 저장
       CONFIG="$OPTARG"
       ;;
-    \?)
+    \?) # 잘못된 옵션 입력시 에러 메시지 출력
       echo "Invalid option: -$OPTARG" >&2
       exit 1
       ;;
-    :)
+    :)  # 옵션 값이 누락된 경우 에러 메시지 출력
       echo "Option -$OPTARG requires an argument." >&2
       exit 1
       ;;
   esac
 done
 
-# Check if bin/hummingbot_quickstart.py exists
+# hummingbot_quickstart.py 파일 존재 여부 확인
 if [[ ! -f bin/hummingbot_quickstart.py ]]; then
     echo "Error: bin/hummingbot_quickstart.py command not found. Make sure you are in the Hummingbot root directory"
     exit 1
 fi
 
-# Check if the hummingbot conda environment is activated
+# 현재 활성화된 conda 환경이 'hummingbot'인지 확인
 if [[ $CONDA_DEFAULT_ENV != "hummingbot" ]]; then
     echo "Error: 'hummingbot' conda environment is not activated. Please activate it and try again."
     exit 1
 fi
 
-# Build the command to run
+# 실행할 커맨드 구성
 CMD="./bin/hummingbot_quickstart.py"
 if [[ ! -z "$PASSWORD" ]]; then
-    CMD="$CMD -p \"$PASSWORD\""
+    CMD="$CMD -p \"$PASSWORD\""  # PASSWORD가 비어 있지 않다면 CMD에 추가
 fi
 
-# Check for valid file extensions
+# 유효한 파일 확장자 확인
 if [[ ! -z "$FILENAME" ]]; then
     if [[ $FILENAME == *.yml || $FILENAME == *.py ]]; then
-        CMD="$CMD -f \"$FILENAME\""
+        CMD="$CMD -f \"$FILENAME\""  # FILENAME이 .yml 또는 .py 확장자인 경우 CMD에 추가
     else
         echo "Error: Invalid strategy or script file. File must be a .yml or .py file."
         exit 4
@@ -57,12 +59,12 @@ fi
 
 if [[ ! -z "$CONFIG" ]]; then
     if [[ $CONFIG == *.yml ]]; then
-        CMD="$CMD -c \"$CONFIG\""
+        CMD="$CMD -c \"$CONFIG\""  # CONFIG 파일이 .yml 확장자인 경우 CMD에 추가
     else
         echo "Error: Config file must be a .yml file."
         exit 3
     fi
 fi
 
-# Execute the command
+# 구성된 커맨드 실행
 eval $CMD
